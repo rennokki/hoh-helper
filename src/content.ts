@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import {
     DataCollectionSettings,
     DataCollectionTimings,
@@ -82,20 +83,20 @@ const handleProxyData = async function(data: WebPageMessagePayload) {
 };
 
 const getConsent = async (categoryId: string): Promise<boolean> => {
-    const result = await chrome.storage.sync.get(dataCollectionSettingsStorageKey);
+    const result = await browser.storage.sync.get(dataCollectionSettingsStorageKey);
     if (result == null) {
         return false;
     }
-    const settings: DataCollectionSettings = result[dataCollectionSettingsStorageKey] || {};
+    const settings: DataCollectionSettings = (result[dataCollectionSettingsStorageKey] || {}) as DataCollectionSettings;
     return Boolean(settings[categoryId]);
 };
 
 const getLastSentTime = async (gameEndpoint: string): Promise<Date> => {
-    const result = await chrome.storage.sync.get(dataCollectionTimingsStorageKey);
+    const result = await browser.storage.sync.get(dataCollectionTimingsStorageKey);
     if (result == null) {
         return new Date(0);
     }
-    const timings: DataCollectionTimings = result[dataCollectionTimingsStorageKey] || {};
+    const timings: DataCollectionTimings = (result[dataCollectionTimingsStorageKey] || {}) as DataCollectionTimings;
     if (timings[gameEndpoint]) {
         return new Date(timings[gameEndpoint]);
     }
@@ -148,21 +149,18 @@ const sendData = async (payload: HohHelperResponseDto): Promise<void> => {
 };
 
 const saveSentTiming = async (gameEndpoint: string): Promise<void> => {
-    chrome.storage.sync.get(dataCollectionTimingsStorageKey, async function(result) {
-        const timings: DataCollectionTimings = result[dataCollectionTimingsStorageKey] || {};
-        timings[gameEndpoint] = new Date().toISOString();
-        await chrome.storage.sync.set({ [dataCollectionTimingsStorageKey]: timings });
-    });
+    const result = await browser.storage.sync.get(dataCollectionTimingsStorageKey);
+    const timings: DataCollectionTimings = (result[dataCollectionTimingsStorageKey] || {}) as DataCollectionTimings;
+    timings[gameEndpoint] = new Date().toISOString();
+    await browser.storage.sync.set({ [dataCollectionTimingsStorageKey]: timings });
 };
 
 const saveStartupData = async (data: string): Promise<void> => {
-    await chrome.storage.local.set({ [startupDataStorageKey]: data });
+    await browser.storage.local.set({ [startupDataStorageKey]: data });
 };
 
 const getSubmissionId = async (): Promise<string | undefined> => {
-    const result = await chrome.storage.sync.get(submissionIdStorageKey);
-    return result[submissionIdStorageKey] || null;
+    const result = await browser.storage.sync.get(submissionIdStorageKey);
+    const id = result[submissionIdStorageKey];
+    return typeof id === "string" ? id : undefined;
 };
-
-
-

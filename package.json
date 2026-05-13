@@ -20,11 +20,14 @@
   },
   "homepage": "https://github.com/IngweLand/hoh-helper#readme",
   "devDependencies": {
-    "@types/chrome": "^0.0.306",
     "@types/node": "^22.13.5",
+    "@types/webextension-polyfill": "^0.12.5",
     "copyfiles": "^2.4.1",
     "dotenv": "^16.4.7",
     "esbuild": "^0.25.0",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "webextension-polyfill": "^0.12.0"
   }
 }

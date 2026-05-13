@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import {
     dataCollectionCategories,
     dataCollectionSettingsStorageKey,
@@ -47,14 +48,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
-    function loadSettings(): void {
-        chrome.storage.sync.get(dataCollectionSettingsStorageKey, function(result) {
-            const settings: DataCollectionSettings = result[dataCollectionSettingsStorageKey] || {};
+    async function loadSettings(): Promise<void> {
+        const result = await browser.storage.sync.get([dataCollectionSettingsStorageKey]);
+        const settings: DataCollectionSettings = (result[dataCollectionSettingsStorageKey] || {}) as DataCollectionSettings;
 
-            dataCollectionCategories.forEach(category => {
-                const checkbox = document.getElementById(category.id) as HTMLInputElement;
-                checkbox.checked = settings[category.id] || false;
-            });
+        dataCollectionCategories.forEach(category => {
+            const checkbox = document.getElementById(category.id) as HTMLInputElement;
+            checkbox.checked = settings[category.id] || false;
         });
     }
 
@@ -62,14 +62,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         dataCollectionCategories.forEach(category => {
             const checkbox = document.getElementById(category.id) as HTMLInputElement;
             if (checkbox) {
-                checkbox.addEventListener("change", function(e: Event) {
+                checkbox.addEventListener("change", async function(e: Event) {
                     const target = e.target as HTMLInputElement;
 
-                    chrome.storage.sync.get(dataCollectionSettingsStorageKey, async function(result) {
-                        const settings: DataCollectionSettings = result[dataCollectionSettingsStorageKey] || {};
-                        settings[category.id] = target.checked;
-                        await chrome.storage.sync.set({ [dataCollectionSettingsStorageKey]: settings });
-                    });
+                    const result = await browser.storage.sync.get([dataCollectionSettingsStorageKey]);
+                    const settings: DataCollectionSettings = (result[dataCollectionSettingsStorageKey] || {}) as DataCollectionSettings;
+                    settings[category.id] = target.checked;
+                    await browser.storage.sync.set({ [dataCollectionSettingsStorageKey]: settings });
                 });
             }
         });
@@ -84,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    chrome.storage.onChanged.addListener(async (changes, area) => {
+    browser.storage.onChanged.addListener(async (_changes, area) => {
         if (area === "local") {
             if (await hasStartupData()) {
                 enableExportButton();
@@ -113,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             const response: ResourceCreatedResponse = await apiResponse.json();
             if (response.webResourceUrl) {
-                await chrome.tabs.create({ url: response.webResourceUrl });
+                await browser.tabs.create({ url: response.webResourceUrl });
                 logger.info("Exported startup data");
             }
         } catch (error) {
@@ -128,8 +127,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     async function getStartupData(): Promise<string | null> {
-        const result = await chrome.storage.local.get([startupDataStorageKey]);
-        return result[startupDataStorageKey] || null;
+        const result = await browser.storage.local.get([startupDataStorageKey]);
+        const v = result[startupDataStorageKey];
+        return typeof v === "string" ? v : null;
     }
 
     function enableExportButton(): void {
@@ -148,15 +148,15 @@ document.addEventListener("DOMContentLoaded", async function() {
             return settings;
         }, {} as DataCollectionSettings);
 
-        await chrome.storage.sync.set({ [dataCollectionSettingsStorageKey]: newSettings });
+        await browser.storage.sync.set({ [dataCollectionSettingsStorageKey]: newSettings });
     });
 
     document.getElementById("helpButton")?.addEventListener("click", async function() {
-        await chrome.tabs.create({ url: extensionHelpPage });
+        await browser.tabs.create({ url: extensionHelpPage });
     });
 
     createCheckboxes();
-    loadSettings();
+    await loadSettings();
     attachCheckboxListeners();
     await updateExportDataState();
 
@@ -172,8 +172,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     let currentSubmissionId = "";
 
     async function loadSubmissionId(): Promise<void> {
-        const result = await chrome.storage.sync.get(submissionIdStorageKey);
-        currentSubmissionId = result[submissionIdStorageKey] || "";
+        const result = await browser.storage.sync.get(submissionIdStorageKey);
+        const id = result[submissionIdStorageKey];
+        currentSubmissionId = typeof id === "string" ? id : "";
         updateSubmissionIdDisplay();
     }
 
@@ -230,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         submissionIdInput.title = "";
 
         currentSubmissionId = newCode;
-        await chrome.storage.sync.set({ [submissionIdStorageKey]: currentSubmissionId });
+        await browser.storage.sync.set({ [submissionIdStorageKey]: currentSubmissionId });
         updateSubmissionIdDisplay();
 
         setDefaultSubmissionFormElementsVisibility();
@@ -242,7 +243,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     generateSubmissionIdButton.addEventListener("click", async () => {
         currentSubmissionId = crypto.randomUUID();
-        await chrome.storage.sync.set({ [submissionIdStorageKey]: currentSubmissionId });
+        await browser.storage.sync.set({ [submissionIdStorageKey]: currentSubmissionId });
         updateSubmissionIdDisplay();
         deleteSubmissionIdButton.classList.remove("hidden");
         copySubmissionIdButton.classList.remove("hidden");
@@ -251,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     deleteSubmissionIdButton.addEventListener("click", async () => {
         currentSubmissionId = "";
-        await chrome.storage.sync.remove(submissionIdStorageKey);
+        await browser.storage.sync.remove(submissionIdStorageKey);
         updateSubmissionIdDisplay();
         deleteSubmissionIdButton.classList.add("hidden");
         copySubmissionIdButton.classList.add("hidden");
