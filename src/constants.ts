@@ -44,6 +44,15 @@ export const dataCollectionCategories: DataCollectionCategory[] = [
             "game/battle/hero/start",
             "game/battle/hero/complete-wave"
         ]
+    },
+    {
+        id: "woa",
+        label: "Atlantis",
+        description: "Leaderboards, map, opponents etc",
+        gameEndpoint: [
+            "game/wakeup",
+            "game/woa/get-player-statistics"
+        ]
     }
 ];
 
@@ -54,6 +63,7 @@ export const sendingFrequenciesMinutes: Record<string, number> = {
     "game/battle/hero/complete-wave": 0.017,
     "game/pvp/get-battle-history": 60,
     "game/wakeup": 180,
+    "game/woa/get-player-statistics": 30,
 };
 
 export const messagingPageSource: string = "hohPage";
