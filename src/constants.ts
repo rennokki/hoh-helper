@@ -53,6 +53,15 @@ export const dataCollectionCategories: DataCollectionCategory[] = [
             "game/wakeup",
             "game/woa/get-player-statistics"
         ]
+    },
+    {
+        id: "heroes",
+        label: "Heroes",
+        description: "Heroes belonging to you and other players.",
+        gameEndpoint: [
+            "game/wakeup",
+            "game/startup"
+        ]
     }
 ];
 
@@ -64,6 +73,7 @@ export const sendingFrequenciesMinutes: Record<string, number> = {
     "game/pvp/get-battle-history": 60,
     "game/wakeup": 180,
     "game/woa/get-player-statistics": 30,
+    "game/startup": 1440,
 };
 
 export const messagingPageSource: string = "hohPage";

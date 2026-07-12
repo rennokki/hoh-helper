@@ -1,6 +1,6 @@
 {
   "name": "hoh-helper",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Easily export your Heroes of History game data—including city layouts, heroes, equipment, leaderboards, and more—to Forge of Games.",
   "scripts": {
     "build:dev": "node build.js dev && copyfiles -u 1 public/**/* dist",
