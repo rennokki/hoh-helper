@@ -1,7 +1,7 @@
 {
 	"name": "HoH Helper | Forge of Games",
 	"description": "Easily export your Heroes of History game data—including city layouts, heroes, equipment, leaderboards, and more—to Forge of Games.",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"manifest_version": 3,
 	"permissions": [
 		"storage"
