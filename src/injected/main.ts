@@ -14,13 +14,21 @@ class InGameDataHandler {
     static logger = getLogger("main");
 
     static init(): void {
-        HohProxy.addRawHandler(InGameDataHandler.handleHohProxyData);
+        HohProxy.addRawHandler(InGameDataHandler.handleHohProxyData, InGameDataHandler.isTrackedUrl);
+    }
+
+    private static isTrackedPath(responseUrlPath: string): boolean {
+        return Boolean(endpointMap[responseUrlPath]) || responseUrlPath === gameStartupUrlPattern;
+    }
+
+    private static isTrackedUrl(url: string): boolean {
+        return InGameDataHandler.isTrackedPath(getPathFromUrl(url));
     }
 
     private static handleHohProxyData(data: HohProxyData): void {
         InGameDataHandler.logger.debug(`Received ${data.responseURL}`);
         const responseUrlPath = getPathFromUrl(data.responseURL);
-        if (!endpointMap[responseUrlPath] && responseUrlPath !== gameStartupUrlPattern) {
+        if (!InGameDataHandler.isTrackedPath(responseUrlPath)) {
             return;
         }
         InGameDataHandler.logger.debug(`Pattern matched ${responseUrlPath}`);
